@@ -65,13 +65,21 @@ class SeleniumCore:
         el = self.find(locator)
         el.click()
 
-                
+    def choose_category(self, locator, list_category):
+        self.click(locator)
+        categories = list_category.split(",")
+        for category in categories:
+            loc = (By.XPATH, f'//span[text()="{category}"]')
+            try:
+                self.click(loc)
+            except TimeoutException:
+                print(f"TimeoutException: Element {category} not clickable")
 
-cr = SeleniumCore('profile1')
-cr.open('https://google.com')
-# cari = "id,APjFqb"
-# cr.click(cari)
-cr.text('xpath,//*[@id="APjFqb"]', 'indotrading' + Keys.ENTER)
-# tombol = (By.XPATH, '/html/body/div[1]/div[3]/form/div[1]/div[1]/div[4]/center/input[1]')
-# cr.click(tombol)
-cr.click('xpath,/html/body/div[1]/div[3]/form/div[1]/div[1]/div[4]/center/input[1]')
+    def switch_to_default_content(self):
+        self.driver.switch_to.default_content()
+    
+    def switch_to_frame(self, locator):
+        try:
+            frame = self.wait.until(EC.frame_to_be_available_and_switch_to_it(locator))
+        except (TimeoutException, NoSuchElementException) as e:
+            print(f"Failed to switch to frame: {str(e)}")
