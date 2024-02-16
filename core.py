@@ -8,8 +8,8 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 
 class SeleniumCore:
-    def __init__(self, chrome_user_data, profile):
-        service = Service(executable_path=r'env/chromedriver/chromedriver')
+    def __init__(self, chromedriver_path, chrome_user_data, profile):
+        service = Service(executable_path=chromedriver_path)
         options = webdriver.ChromeOptions()
         options.add_argument(r'--user-data-dir='+chrome_user_data)
         options.add_argument(r'--profile-directory='+profile)
