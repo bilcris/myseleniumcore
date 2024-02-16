@@ -8,10 +8,10 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import time
 
 class SeleniumCore:
-    def __init__(self, profile):
+    def __init__(self, profile, chrome_user_data):
         service = Service(executable_path=r'env/chromedriver/chromedriver')
         options = webdriver.ChromeOptions()
-        options.add_argument(r'--user-data-dir=/home/user/.config/google-chrome')
+        options.add_argument(r'--user-data-dir='+chrome_user_data)
         options.add_argument(r'--profile-directory='+profile)
         options.add_experimental_option("detach",True)
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
