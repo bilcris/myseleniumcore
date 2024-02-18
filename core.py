@@ -5,6 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import pyautogui
 import time
 
 class SeleniumCore:
@@ -18,32 +19,35 @@ class SeleniumCore:
 
         self.driver = webdriver.Chrome(service=service, options=options)
         self.driver.maximize_window()
+        self.driver.implicitly_wait(10)
         self.wait = WebDriverWait(self.driver, 15)
+
+        self.locator_map = {
+            "class"      : By.CLASS_NAME,
+            "css"        : By.CSS_SELECTOR,
+            "id"         : By.ID,
+            "name"       : By.NAME,
+            "link"       : By.LINK_TEXT,
+            "partial"    : By.PARTIAL_LINK_TEXT,
+            "tag"        : By.TAG_NAME,
+            "xpath"      : By.XPATH
+        }
 
     def open(self,url):
         self.driver.get(url)
 
+    def waits(self):
+        self.driver.implicitly_wait(15)
+
     def find(self, locator):
         loc = locator.split(",")
-        type = loc[0]
+        types = loc[0]
         value = loc[1]
         try:
-            if type == "class":
-                locator = (By.CLASS_NAME, value)
-            if type == "css":
-                locator = (By.CSS_SELECTOR, value)
-            if type == "id":
-                locator = (By.ID, value)
-            if type == "name":
-                locator = (By.NAME, value)
-            if type == "link":
-                locator = (By.LINK_TEXT, value)
-            if type == "partial":
-                locator = (By.PARTIAL_LINK_TEXT, value)
-            if type == "tag":
-                locator = (By.TAG_NAME, value)
-            if type == "xpath":
-                locator = (By.XPATH, value)
+            locator_type = self.locator_map.get(types)
+            if locator_type:
+                locator = (locator_type, value)
+                return self.wait.until(EC.presence_of_element_located(locator))
 
             return self.wait.until(EC.presence_of_element_located(locator))
         except TimeoutException:
@@ -58,13 +62,32 @@ class SeleniumCore:
         
     def text(self, locator, text):
         el = self.find(locator)
-        el.clear()
-        el.send_keys(text)
+        if el:
+            el.clear()
+            el.send_keys(text)
+        else:
+            print('element tidak ditemukan atau tidak dapat diisi teks')
+    
+    def img(self,locator,img_path):
+        el = self.find(locator)
+        if el:
+            el.send_keys(img_path)
+        else:
+            print('elemen tidak ditemukan')
+
+    def img_click(self,locator,img_path):
+        self.click(locator)
+        time.sleep(1)
+        pyautogui.write(img_path)
+        pyautogui.press('enter')
     
     def click(self, locator):
         el = self.find(locator)
-        el.click()
-
+        if el:
+            locator_type, locator_value = locator.split(",", 1)
+            self.wait.until(EC.element_to_be_clickable((locator_type,locator_value))).click()
+        else:
+            print('Elemen tidak ditemukan atau tidak bisa di click')
     def choose_category(self, locator, list_category):
         self.click(locator)
         categories = list_category.split(",")
@@ -79,7 +102,14 @@ class SeleniumCore:
         self.driver.switch_to.default_content()
     
     def switch_to_frame(self, locator):
+        frame = self.find(locator)
         try:
-            frame = self.wait.until(EC.frame_to_be_available_and_switch_to_it(locator))
+            frame = self.wait.until(EC.frame_to_be_available_and_switch_to_it(frame))
         except (TimeoutException, NoSuchElementException) as e:
             print(f"Failed to switch to frame: {str(e)}")
+
+
+# driver      = r'env/chromedriver/chromedriver.exe'
+# user_data   = r'C:/Users/ADM-IT/AppData/Local/Google/Chrome/User Data'
+# profile     = 'profile1'
+# browser = SeleniumCore(driver, user_data, profile)
